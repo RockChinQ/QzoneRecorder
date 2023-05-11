@@ -1,0 +1,10 @@
+qzone:
+  cookies: xxx
+database:
+  # 支持数据库类型: mysql
+  type: mysql
+  host: localhost
+  port: 3306
+  user: root
+  password: root
+  database: qzone
