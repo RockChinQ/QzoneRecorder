@@ -12,21 +12,6 @@ import (
 	"time"
 )
 
-type QzoneManager struct {
-	cookies string // 登录所需的cookies
-}
-
-func NewQzoneManager() *QzoneManager {
-	return &QzoneManager{}
-}
-
-var (
-	// qrcode url
-	qrcode_url      = "https://ssl.ptlogin2.qq.com/ptqrshow?appid=549000912&e=2&l=M&s=3&d=72&v=4&t=0.31232733520361844&daid=5&pt_3rd_aid=0"
-	login_check_url = "https://xui.ptlogin2.qq.com/ssl/ptqrlogin?u1=https://qzs.qq.com/qzone/v5/loginsucc.html?para=izone&ptqrtoken=%s&ptredirect=0&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-1656992258324&js_ver=22070111&js_type=1&login_sig=&pt_uistyle=40&aid=549000912&daid=5&has_onekey=1&&o1vId=1e61428d61cb5015701ad73d5fb59f73"
-	check_sig_url   = "https://ptlogin2.qzone.qq.com/check_sig?pttype=1&uin=%s&service=ptqrlogin&nodirect=1&ptsigx=%s&s_url=https://qzs.qq.com/qzone/v5/loginsucc.html?para=izone&f_url=&ptlang=2052&ptredirect=100&aid=549000912&daid=5&j_later=0&low_login_hour=0&regmaster=0&pt_login_type=3&pt_aid=0&pt_aaid=16&pt_light=0&pt_3rd_aid=0"
-)
-
 func getPTQRToken(qrsig string) string {
 	e := 0
 	for i := 1; i < len(qrsig)+1; i++ {
@@ -128,6 +113,7 @@ func (m *QzoneManager) LoginViaQRCode(qr_got_callback func(path string)) (string
 			if len(uin_match) > 1 {
 				uin = uin_match[1]
 			}
+			m.Uin = uin
 
 			// set-cookie
 			set_cookies_slice := res.Header.Values("Set-Cookie")
@@ -171,10 +157,62 @@ func (m *QzoneManager) LoginViaQRCode(qr_got_callback func(path string)) (string
 			for k, v := range final_cookies_dict {
 				cookies += k + "=" + v + ";"
 			}
+			m.Cookie_map = final_cookies_dict
 
 			break
 		}
 	}
 
+	m.Cookie_str = cookies
+
 	return cookies, nil
+}
+
+func (m *QzoneManager) LoginViaCookies(cookies string) error {
+	m.Cookie_str = cookies
+	// 将cookies转换成map
+	cookies_map := map[string]string{}
+
+	cookies_split := strings.Split(cookies, ";")
+
+	for _, cookie := range cookies_split {
+		spt := strings.Split(cookie, "=")
+		if len(spt) == 2 && cookies_map[spt[0]] == "" {
+			cookies_map[spt[0]] = spt[1]
+		}
+	}
+
+	m.Cookie_map = cookies_map
+
+	// 从cookies提取uin的值并删除最前面的o
+	uin := ""
+
+	for k, v := range cookies_map {
+		if k == "uin" {
+			uin = v
+			break
+		}
+	}
+
+	if uin == "" {
+		return errors.New("cookies中没有uin")
+	}
+
+	m.Uin = uin[1:]
+	if m.CheckCookiesUsability(3) {
+		return nil
+	}
+	return errors.New("不可用的cookies")
+}
+
+func (m *QzoneManager) CheckCookiesUsability(retry int) bool {
+	for i := 0; i < retry; i++ {
+		_, _, err := m.GetVisitorAmount()
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		return true
+	}
+	return false
 }
