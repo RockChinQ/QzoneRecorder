@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"io"
 	"os"
 
@@ -56,6 +57,7 @@ func LoadConfig() error {
 		if err != nil {
 			return err
 		}
+		return errors.New("无配置文件，请修改config.yaml中的配置")
 	}
 	// 读取config.yaml
 	viper.SetConfigName("config")
