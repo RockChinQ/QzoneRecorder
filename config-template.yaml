@@ -1,5 +1,6 @@
 qzone:
   cookies: xxx
+
 database:
   # 支持数据库类型: mysql
   type: mysql
