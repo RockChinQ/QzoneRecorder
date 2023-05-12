@@ -1,10 +1,15 @@
 package main
 
 import (
+	"QzoneRecorder/pkg/impls/database"
 	"QzoneRecorder/pkg/impls/qzone"
 	_ "QzoneRecorder/pkg/impls/qzone"
 	qzmodel "QzoneRecorder/pkg/models/qzone"
 	"QzoneRecorder/pkg/utils"
+
+	_ "QzoneRecorder/pkg/impls/database"
+	dbmodel "QzoneRecorder/pkg/models/database"
+
 	"fmt"
 
 	"github.com/spf13/viper"
@@ -48,4 +53,19 @@ func main() {
 
 		fmt.Println("二维码登录成功, cookies已保存到config.yaml")
 	}
+
+	// 数据库
+	dbmodel.DBMgr = database.NewMySQLAdapter()
+
+	err = dbmodel.DBMgr.Connect()
+	if err != nil {
+		panic(err)
+	}
+
+	// 初始化数据库
+	err = dbmodel.DBMgr.Initialize()
+	if err != nil {
+		panic(err)
+	}
+
 }
