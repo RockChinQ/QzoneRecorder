@@ -1,9 +1,9 @@
 database:
-    database: qzone
-    host: localhost
-    password: root
-    port: 3306
     type: mysql
+    host: localhost
+    port: 3306
     user: root
+    password: root
+    database: qzone
 qzone:
     cookies: xxx
