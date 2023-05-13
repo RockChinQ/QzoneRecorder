@@ -56,4 +56,4 @@ htmls = None
 with open('htmls.json', 'r', encoding='utf-8') as f:
     htmls = json.load(f)
 
-retrieve_info_from_html(htmls[0])
+retrieve_info_from_html(htmls[1])

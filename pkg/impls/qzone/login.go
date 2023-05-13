@@ -209,7 +209,6 @@ func (m *QzoneManager) CheckCookiesUsability(retry int) bool {
 	for i := 0; i < retry; i++ {
 		_, _, err := m.GetVisitorAmount()
 		if err != nil {
-			fmt.Println(err)
 			continue
 		}
 		return true

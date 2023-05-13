@@ -1,6 +1,7 @@
 package qzone
 
 import (
+	entities "QzoneRecorder/pkg/models/qzone/entities"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -45,5 +46,13 @@ func (m *QzoneManager) GetVisitorAmount() (int, int, error) {
 		return 0, 0, fmt.Errorf("code != 0 (%d)", json_data.Code)
 	}
 
+	if len(json_data.Data.ModVisitCount) == 0 {
+		return 0, 0, fmt.Errorf("len(json_data.Data.ModVisitCount) == 0")
+	}
+
 	return json_data.Data.ModVisitCount[0].TodayCount, json_data.Data.ModVisitCount[0].TotalCount, nil
+}
+
+func (m *QzoneManager) FetchFeedsList() ([]entities.Emotion, error) {
+	return nil, nil
 }
