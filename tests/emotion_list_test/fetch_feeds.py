@@ -65,6 +65,25 @@ htmls = re.findall(r"html:'(.*?)',", resp.text)
 
 print(htmls)
 
+def rev_escape(s):
+    """反转义"""
+    # \x3C -> <
+    # \/ -> /
+    # \x22 -> "
+    # &amp; -> &
+
+    s = s.replace('\\x3C', '<')
+
+    s = s.replace('\\/', '/')
+
+    s = s.replace('\\x22', '"')
+
+    s = s.replace('&amp;', '&')
+
+    return s
+
+htmls = [rev_escape(html) for html in htmls]
+
 # 把htmls以json存到htmls.json中
 import json
 

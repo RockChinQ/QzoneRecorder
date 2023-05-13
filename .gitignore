@@ -3,3 +3,4 @@ cookies.json
 go.sum
 qrcode.png
 htmls.json
+*.html

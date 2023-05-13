@@ -45,8 +45,9 @@ def retrieve_info_from_html(htmls: str):
 
     # 提取tid
     # data-tid=\\x22abcd1234\\x22 中的abcd1234
+    # 并且长度为24
 
-    tids = re.findall(r"data-tid=\\x22(\w+)\\x22", htmls)
+    tids = re.findall(r"data-tid=\\x22([a-z\d]{24})\\x22", htmls)
 
     print(tids)
 
@@ -56,4 +57,4 @@ htmls = None
 with open('htmls.json', 'r', encoding='utf-8') as f:
     htmls = json.load(f)
 
-retrieve_info_from_html(htmls[1])
+retrieve_info_from_html(htmls[3])
