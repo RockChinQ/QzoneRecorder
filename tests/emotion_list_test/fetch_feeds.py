@@ -33,9 +33,11 @@ print(cookies_dict)
 gtk = generate_gtk(cookies_dict['p_skey'])
 
 import time
+pagenum = 10
 # 获取接口数据
-url = "https://user.qzone.qq.com/proxy/domain/ic2.qzone.qq.com/cgi-bin/feeds/feeds3_html_more?uin={}&scope=0&view=1&daylist=&uinlist=&gid=&flag=1&filter=all&applist=all&refresh=0&aisortEndTime=0&aisortOffset=0&getAisort=0&aisortBeginTime=0&pagenum=2&externparam=&firstGetGroup=0&icServerTime=0&mixnocache=0&scene=0&begintime=0&count=20&dayspac=0&sidomain=qzonestyle.gtimg.cn&useutf8=1&outputhtmlfeed=1&rd=0.3436615045444116&usertime={}&windowId=0.9554080071832363&getob=1&g_tk={}".format(cookies_dict['uin'][1:],time.time()*1000, gtk)
-
+begintime = 1683952141
+# url = "https://user.qzone.qq.com/proxy/domain/ic2.qzone.qq.com/cgi-bin/feeds/feeds3_html_more?uin={}&scope=0&view=1&daylist=&uinlist=&gid=&flag=1&filter=all&applist=all&refresh=0&aisortEndTime=0&aisortOffset=0&getAisort=0&aisortBeginTime=0&pagenum={}&externparam=basetime=1684034841&pagenum={}&dayvalue=0&getadvlast=1&hasgetadv=10412150919^0^1684038055*10376731439^0^1684038055&lastentertime=0&LastAdvPos=1&UnReadCount=0&UnReadSum=8&LastIsADV=1&UpdatedFollowUins=&UpdatedFollowCount=0&LastRecomBrandID=&TRKPreciList=&firstGetGroup=0&icServerTime=0&mixnocache=0&scene=0&begintime=1684034841&count=10&dayspac=0&sidomain=qzonestyle.gtimg.cn&useutf8=1&outputhtmlfeed=1&rd=0.7917492881867267&usertime={}&windowId=0.6394508482669143&g_tk={}&g_tk={}".format(cookies_dict['uin'][1:],pagenum,pagenum,time.time()*1000, gtk,gtk)
+url = "https://user.qzone.qq.com/proxy/domain/ic2.qzone.qq.com/cgi-bin/feeds/feeds3_html_more?uin={}&scope=0&view=1&daylist=&uinlist=&gid=&flag=1&filter=all&applist=all&refresh=0&aisortEndTime=0&aisortOffset=0&getAisort=0&aisortBeginTime=0&pagenum={}&externparam=basetime={}&pagenum={}&dayvalue=0&getadvlast=1&hasgetadv=10408302957^0^1684038110&lastentertime=0&LastAdvPos=1&UnReadCount=0&UnReadSum=18&LastIsADV=1&UpdatedFollowUins=&UpdatedFollowCount=0&LastRecomBrandID=&TRKPreciList=&firstGetGroup=0&icServerTime=0&mixnocache=0&scene=0&begintime={}&count=10&dayspac=0&sidomain=qzonestyle.gtimg.cn&useutf8=1&outputhtmlfeed=1&rd=0.9141480747320878&usertime={}&windowId=0.8010646234564336&g_tk={}&g_tk={}".format(cookies_dict['uin'][1:],pagenum,begintime, pagenum,begintime, time.time()*1000, gtk, gtk)
 import requests
 
 resp = requests.get(
@@ -87,7 +89,9 @@ htmls = [rev_escape(html) for html in htmls]
 # 把htmls以json存到htmls.json中
 import json
 
-with open('htmls.json', 'w') as f:
+with open('htmls.json', 'w', encoding="utf-8") as f:
     json.dump(htmls, f, ensure_ascii=False, indent=4)
 
 print("count:", len(htmls))
+
+print(url)

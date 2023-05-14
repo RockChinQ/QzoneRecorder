@@ -61,7 +61,10 @@ func (m *QzoneManager) GetVisitorAmount() (int, int, error) {
 
 func ParseEmotionFromHTML(html string) (entities.Emotion, error) {
 
-	emotion := entities.Emotion{}
+	emotion := entities.Emotion{
+		Comments: []entities.Comment{},
+		Medias:   []entities.Media{},
+	}
 
 	unescaped := strings.ReplaceAll(html, "\\x3C", "<")
 	unescaped = strings.ReplaceAll(unescaped, "\\/", "/")
@@ -94,17 +97,25 @@ func ParseEmotionFromHTML(html string) (entities.Emotion, error) {
 
 	emotion.UserCard = userCard
 
+	// text
 	dom.Find(".f-info").Each(func(i int, selection *goquery.Selection) {
-		emotion.Text += selection.Text()
+		emotion.Text += selection.Text() + "\n"
 	})
+	if len(emotion.Text) > 0 {
+		emotion.Text = emotion.Text[:len(emotion.Text)-1]
+	}
 
 	// tid
 	dom.Find(".none").Each(func(i int, selection *goquery.Selection) {
-		tid := selection.AttrOr("tid", "")
+		tid := selection.AttrOr("data-tid", "")
 		if strings.Trim(tid, " ") != "" {
 			emotion.Eid = tid
 		}
 	})
+
+	if emotion.Eid == "" {
+		return entities.Emotion{}, fmt.Errorf("no tid found, perhaps this is a advertisement")
+	}
 
 	// images
 	dom.Find(".img-item").Each(func(i int, selection *goquery.Selection) {
@@ -122,7 +133,9 @@ func ParseEmotionFromHTML(html string) (entities.Emotion, error) {
 	})
 
 	// traffic
-	traffic := entities.Traffic{}
+	traffic := entities.Traffic{
+		Likers: []entities.UserCard{},
+	}
 	// visit_count
 	dom.Find(".qz_feed_plugin").Each(func(i int, selection *goquery.Selection) {
 		text := selection.Text()
@@ -138,13 +151,40 @@ func ParseEmotionFromHTML(html string) (entities.Emotion, error) {
 		traffic.VisitAmount = int(tr)
 	})
 
+	// forward
+	dom.Find(".wupfeed").Each(func(i int, s *goquery.Selection) {
+		s.Find("i").Each(func(i int, s *goquery.Selection) {
+			forwardCountStr := s.AttrOr("data-retweetcount", "0")
+
+			forwardCount, err := strconv.ParseInt(forwardCountStr, 10, 64)
+			if err != nil {
+				return
+			}
+
+			traffic.ForwardAmount = int(forwardCount)
+		})
+	})
+
+	// like amount
+	dom.Find(".f-like-cnt").Each(func(i int, s *goquery.Selection) {
+		likeCountStr := s.Text()
+
+		likeCount, err := strconv.ParseInt(likeCountStr, 10, 64)
+		if err != nil {
+			return
+		}
+
+		traffic.LikeAmount = int(likeCount)
+	})
+
 	emotion.Traffic = traffic
 
-	emo_json_str, _ := json.Marshal(emotion)
+	// comments
 
-	fmt.Println(string(emo_json_str))
+	// detail_page_url
+	emotion.DetailPageUrl = fmt.Sprintf("https://user.qzone.qq.com/%s/mood/%s", emotion.UserCard.QQ, emotion.Eid)
 
-	return entities.Emotion{}, nil
+	return emotion, nil
 }
 
 func (m *QzoneManager) FetchFeedsList(pageNum int) ([]entities.Emotion, error) {
@@ -180,7 +220,6 @@ func (m *QzoneManager) FetchFeedsList(pageNum int) ([]entities.Emotion, error) {
 		for _, html := range htmls {
 			emo, err := ParseEmotionFromHTML(html[1])
 			if err != nil {
-				fmt.Println(err)
 				continue
 			}
 			result = append(result, emo)
