@@ -11,5 +11,5 @@ type QzoneAdapter interface {
 	LoginViaQRCode(qr_got_callback func(path string)) (string, error)
 	LoginViaCookies(cookies string) error
 	GetVisitorAmount() (int, int, error)
-	FetchFeedsList() ([]entities.Emotion, error)
+	FetchFeedsList(pageNum int) ([]entities.Emotion, error)
 }

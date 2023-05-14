@@ -5,6 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+
+	goquery "github.com/PuerkitoBio/goquery"
 )
 
 // 获取访客数量
@@ -53,6 +59,132 @@ func (m *QzoneManager) GetVisitorAmount() (int, int, error) {
 	return json_data.Data.ModVisitCount[0].TodayCount, json_data.Data.ModVisitCount[0].TotalCount, nil
 }
 
-func (m *QzoneManager) FetchFeedsList() ([]entities.Emotion, error) {
-	return nil, nil
+func ParseEmotionFromHTML(html string) (entities.Emotion, error) {
+
+	emotion := entities.Emotion{}
+
+	unescaped := strings.ReplaceAll(html, "\\x3C", "<")
+	unescaped = strings.ReplaceAll(unescaped, "\\/", "/")
+	unescaped = strings.ReplaceAll(unescaped, "\\x22", "\"")
+	unescaped = strings.ReplaceAll(unescaped, "&amp;", "&")
+
+	// 把unescaped写入文件unescaped.html
+
+	err := ioutil.WriteFile("unescaped.html", []byte(unescaped), 0644)
+
+	dom, err := goquery.NewDocumentFromReader(strings.NewReader(unescaped))
+	if err != nil {
+		return entities.Emotion{}, err
+	}
+
+	userCard := entities.UserCard{}
+	// nickname
+	// .f-nick的div下的a标签的text是nickname
+	dom.Find(".f-nick").Each(func(i int, selection *goquery.Selection) {
+		aTag := selection.Find(".f-name")
+		userCard.Nickname = aTag.Text()
+		userLink := aTag.AttrOr("link", "")
+		// link="nameCard_12345"
+		uin, err := strconv.ParseInt(strings.ReplaceAll(userLink, "nameCard_", ""), 10, 64)
+		if err != nil {
+			return
+		}
+		userCard.QQ = strconv.FormatInt(uin, 10)
+	})
+
+	emotion.UserCard = userCard
+
+	dom.Find(".f-info").Each(func(i int, selection *goquery.Selection) {
+		emotion.Text += selection.Text()
+	})
+
+	// tid
+	dom.Find(".none").Each(func(i int, selection *goquery.Selection) {
+		tid := selection.AttrOr("tid", "")
+		if strings.Trim(tid, " ") != "" {
+			emotion.Eid = tid
+		}
+	})
+
+	// images
+	dom.Find(".img-item").Each(func(i int, selection *goquery.Selection) {
+		imgTag := selection.Find("img")
+
+		// 图片的src
+		src := imgTag.AttrOr("src", "")
+
+		img := entities.Media{
+			Type: "image",
+			Url:  src,
+		}
+
+		emotion.Medias = append(emotion.Medias, img)
+	})
+
+	// traffic
+	traffic := entities.Traffic{}
+	// visit_count
+	dom.Find(".qz_feed_plugin").Each(func(i int, selection *goquery.Selection) {
+		text := selection.Text()
+
+		num_str := strings.ReplaceAll(text, "浏览", "")
+		num_str = strings.ReplaceAll(num_str, "次", "")
+
+		tr, err := strconv.ParseInt(num_str, 10, 64)
+
+		if err != nil {
+			return
+		}
+		traffic.VisitAmount = int(tr)
+	})
+
+	emotion.Traffic = traffic
+
+	emo_json_str, _ := json.Marshal(emotion)
+
+	fmt.Println(string(emo_json_str))
+
+	return entities.Emotion{}, nil
+}
+
+func (m *QzoneManager) FetchFeedsList(pageNum int) ([]entities.Emotion, error) {
+	result := []entities.Emotion{}
+
+	feeds_jsonp_resp, err := m.GetWithContext(
+		fmt.Sprintf(feeds3_html_more, m.Uin, pageNum, strconv.FormatInt(time.Now().Unix()*1000, 10), m.GenerateGTK()),
+		map[string]string{},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	feeds_jsonp_bytes, err := ioutil.ReadAll(feeds_jsonp_resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// 字符串
+	feeds_jsonp := string(feeds_jsonp_bytes)
+
+	// 提取html:'xxx',中的xxx
+	re := regexp.MustCompile(`html:'(.*?)',`)
+
+	htmls := re.FindAllStringSubmatch(feeds_jsonp, -1)
+
+	if len(htmls) == 0 {
+		return result, nil
+	} else {
+		// 替换掉html中的转义字符
+
+		for _, html := range htmls {
+			emo, err := ParseEmotionFromHTML(html[1])
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+			result = append(result, emo)
+		}
+	}
+	return result, nil
 }

@@ -54,6 +54,11 @@ func main() {
 		fmt.Println("二维码登录成功, cookies已保存到config.yaml")
 	}
 
+	_, err = qzmodel.QzMgr.FetchFeedsList(1)
+	if err != nil {
+		panic(err)
+	}
+
 	// 数据库
 	dbmodel.DBMgr = database.NewMySQLAdapter()
 
@@ -62,10 +67,10 @@ func main() {
 		panic(err)
 	}
 
-	// 初始化数据库
-	err = dbmodel.DBMgr.Initialize()
-	if err != nil {
-		panic(err)
-	}
+	// // 初始化数据库
+	// err = dbmodel.DBMgr.Initialize()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 }

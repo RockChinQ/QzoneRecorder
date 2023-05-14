@@ -1,10 +1,11 @@
 package qzone
 
 type Emotion struct {
-	Eid       string  `json:"eid"`
-	QQ        string  `json:"qq"`
-	Nickname  string  `json:"nickname"`
-	Text      string  `json:"text"`
-	Medias    []Media `json:"medias"`
-	TimeStamp string  `json:"time_stamp"`
+	Eid       string    `json:"eid"`
+	UserCard  UserCard  `json:"user_card"`
+	Text      string    `json:"text"`
+	Medias    []Media   `json:"medias"`
+	Comments  []Comment `json:"comments"`
+	TimeStamp int       `json:"time_stamp"`
+	Traffic   Traffic   `json:"traffic"`
 }

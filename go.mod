@@ -5,6 +5,12 @@ go 1.18
 require github.com/spf13/viper v1.15.0
 
 require (
+	github.com/PuerkitoBio/goquery v1.8.1 // indirect
+	github.com/andybalholm/cascadia v1.3.1 // indirect
+	golang.org/x/net v0.7.0 // indirect
+)
+
+require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/hashicorp/hcl v1.0.0 // indirect

@@ -34,7 +34,7 @@ gtk = generate_gtk(cookies_dict['p_skey'])
 
 import time
 # 获取接口数据
-url = "https://user.qzone.qq.com/proxy/domain/ic2.qzone.qq.com/cgi-bin/feeds/feeds3_html_more?uin={}&scope=0&view=1&daylist=&uinlist=&gid=&flag=1&filter=all&applist=all&refresh=0&aisortEndTime=0&aisortOffset=0&getAisort=0&aisortBeginTime=0&pagenum=1&externparam=&firstGetGroup=0&icServerTime=0&mixnocache=0&scene=0&begintime=0&count=10&dayspac=0&sidomain=qzonestyle.gtimg.cn&useutf8=1&outputhtmlfeed=1&rd=0.3436615045444116&usertime={}&windowId=0.9554080071832363&getob=1&g_tk={}".format(cookies_dict['uin'][1:],time.time()*1000, gtk)
+url = "https://user.qzone.qq.com/proxy/domain/ic2.qzone.qq.com/cgi-bin/feeds/feeds3_html_more?uin={}&scope=0&view=1&daylist=&uinlist=&gid=&flag=1&filter=all&applist=all&refresh=0&aisortEndTime=0&aisortOffset=0&getAisort=0&aisortBeginTime=0&pagenum=2&externparam=&firstGetGroup=0&icServerTime=0&mixnocache=0&scene=0&begintime=0&count=20&dayspac=0&sidomain=qzonestyle.gtimg.cn&useutf8=1&outputhtmlfeed=1&rd=0.3436615045444116&usertime={}&windowId=0.9554080071832363&getob=1&g_tk={}".format(cookies_dict['uin'][1:],time.time()*1000, gtk)
 
 import requests
 
@@ -90,3 +90,4 @@ import json
 with open('htmls.json', 'w') as f:
     json.dump(htmls, f, ensure_ascii=False, indent=4)
 
+print("count:", len(htmls))
